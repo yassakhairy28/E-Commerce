@@ -27,23 +27,6 @@ const limiter = rateLimit({
   limit: 50, // limit eacth IP 50 requests per windowMs
 });
 
-// const swaggerOptions = {
-//   definition: {
-//     openapi: "3.0.0",
-//     info: {
-//       title: "E-Commerce API",
-//       version: "1.0.0",
-//       description: "API documentation for the E-Commerce App",
-//     },
-//     servers: [
-//       {
-//         url: "http://localhost:3000",
-//       },
-//     ],
-//   },
-//   apis: ["./src/docs/**/*.ts"],
-// };
-
 const options = {
   definition: {
     openapi: "3.0.0",
