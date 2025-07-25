@@ -93,16 +93,9 @@ class AuthService {
     if (!comparePassword)
       return next(new ApiError("Invalid Email or Password", 401));
 
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
-    return res.status(200).json({
-      message: "Sign In successfully",
-      Tokens: { accessToken, refreshToken },
-    });
+    emailEmitter.emit("sendEmail", data.email, user.firstName, OtpType.login);
 
-    // emailEmitter.emit("sendEmail", data.email, user.firstName, OtpType.login);
-
-    // return res.status(200).json({ message: "please enter otp to login" });
+    return res.status(200).json({ message: "please enter otp to login" });
   };
 
   confirmSignIn = async (req: Request, res: Response, next: NextFunction) => {
