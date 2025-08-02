@@ -21,7 +21,7 @@ This is a fully-featured E-Commerce REST API built using **Express.js**, **TypeS
 - **Bcrypt** for hashing
 - **JWT** for authentication
 - **Socket.IO** _(Coming Soon)_
-- **GraphQL** _(Coming Soon)_
+
 
 ---
 
@@ -105,7 +105,9 @@ GET /order → Get user orders
 
 PATCH /order/status/:orderId → Admin updates order status
 
-📸 Swagger Screenshot
+Admin Dashboard
+ Admin-related APIs for managing users, products, categories, subcategories, brands, coupons, reviews, and orders
+
 
 🧠 Notes & Highlights
 Environment Variables are required (.env), including:
@@ -128,8 +130,6 @@ Swagger setup is modular via separated files (auth.swagger.ts, product.swagger.t
 
 🧩 Coming Soon
 📡 Socket.IO: for real-time notifications and live chat.
-
-🧪 GraphQL: to support flexible queries for admin dashboard.
 
 🤝 Connect
 لو حابب تراجع الكود، تدي فيدباك أو تتواصل معايا لأي فرصة شغل أو تعاون:
