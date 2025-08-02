@@ -1,6 +1,11 @@
 import joi, { ObjectSchema } from "joi";
 import { Types } from "mongoose";
-import { discountTypes, IPaymentMethod, userRole } from "../types/types";
+import {
+  discountTypes,
+  IOrderStatus,
+  IPaymentMethod,
+  userRole,
+} from "../types/types";
 import { asyncHandler } from "./error.handler.middleware";
 import { NextFunction, Request, Response } from "express";
 import { parseExpiresAt } from "../helper/dateHandle.ts";
@@ -79,7 +84,9 @@ export const generalFields = {
   otp: joi.string().pattern(/^[0-9]{6}$/),
   age: joi.number().min(16),
   address: joi.string(),
-  token: joi.string().pattern(/^(Admin|User)\s[\w-]+\.[\w-]+\.[\w-]+$/),
+  token: joi
+    .string()
+    .pattern(/^(Admin|User|SuperAdmin)\s[\w-]+\.[\w-]+\.[\w-]+$/),
   select: joi.string().min(1),
   sort: joi.string().min(1),
   populate: joi.array().items(joi.string()),
@@ -116,4 +123,9 @@ export const generalFields = {
       : helper.message("in-valid paymentMethod");
   }),
   rating: joi.number().min(1).max(5),
+  statusOrder: joi.string().custom((value, helper: any) => {
+    return Object.values(IOrderStatus).includes(value)
+      ? true
+      : helper.message("in-valid statusOrder");
+  }),
 };

@@ -4,7 +4,6 @@ export interface ISignUpDto {
   firstName: string;
   lastName: string;
   email: string;
-  role: userRole;
   password: string;
   confirmPassword: string;
   mobileNumber: string;

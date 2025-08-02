@@ -10,29 +10,29 @@ import {
   filesFilter,
   upload,
 } from "../../middlewares/multer.middleware.ts";
+import { userRole } from "../../types/types.ts";
 
 const userRouter: Router = Router();
 
 userRouter.get(
-  "/:userId",
+  "/",
   auth(),
-  allowTo(["Admin", "User"]),
-  validation(userValidation.getProfileSchema),
+  allowTo([userRole.Admin, userRole.User, userRole.SuperAdmin]),
   asyncHandler(userService.getProfile)
 );
 
 userRouter.patch(
-  "/:userId",
+  "/",
   auth(),
-  allowTo(["Admin", "User"]),
+  allowTo([userRole.Admin, userRole.User, userRole.SuperAdmin]),
   validation(userValidation.updateProfileSchema),
   asyncHandler(userService.updateProfile)
 );
 
 userRouter.patch(
-  "/:userId/profilePic",
+  "/profilePic",
   auth(),
-  allowTo(["Admin", "User"]),
+  allowTo([userRole.Admin, userRole.User, userRole.SuperAdmin]),
   upload.single("profilePic"),
   filesFilter(allowedfiles.image, allowedfilesFilterForSharp.image),
   validation(userValidation.uploadProfilePicSchema),
@@ -40,19 +40,25 @@ userRouter.patch(
 );
 
 userRouter.delete(
-  "/:userId/profilePic",
+  "/profilePic",
   auth(),
-  allowTo(["Admin", "User"]),
-  validation(userValidation.getProfileSchema),
+  allowTo([userRole.Admin, userRole.User, userRole.SuperAdmin]),
   asyncHandler(userService.deleteProfilePic)
 );
 
 userRouter.patch(
   "/updatePassword",
   auth(),
-  allowTo(["Admin", "User"]),
+  allowTo([userRole.Admin, userRole.User, userRole.SuperAdmin]),
   validation(userValidation.updatePasswordSchema),
   asyncHandler(userService.updatePassword)
+);
+
+userRouter.delete(
+  "/",
+  auth(),
+  allowTo([userRole.Admin, userRole.User, userRole.SuperAdmin]),
+  asyncHandler(userService.deleteProfile)
 );
 
 export default userRouter;

@@ -11,6 +11,7 @@ import {
   upload,
 } from "../../middlewares/multer.middleware";
 import subCategoryRouter from "../sub_category/sub_category.controller.ts";
+import { userRole } from "../../types/types.ts";
 
 const categoryRouter: Router = Router();
 categoryRouter.use("/:categoryId/subCategory", subCategoryRouter);
@@ -18,7 +19,7 @@ categoryRouter.use("/:categoryId/subCategory", subCategoryRouter);
 categoryRouter.post(
   "/createCategory",
   auth(),
-  allowTo(["Admin"]),
+  allowTo([userRole.Admin, userRole.SuperAdmin]),
   upload.single("logo"),
   filesFilter(allowedfiles.image, allowedfilesFilterForSharp.image),
   validation(categoryValidation.createCategorySchema),
@@ -28,7 +29,7 @@ categoryRouter.post(
 categoryRouter.patch(
   "/updateCategory/:categoryId",
   auth(),
-  allowTo(["Admin"]),
+  allowTo([userRole.Admin, userRole.SuperAdmin]),
   upload.single("logo"),
   filesFilter(allowedfiles.image, allowedfilesFilterForSharp.image),
   validation(categoryValidation.updateCategorySchema),
@@ -39,6 +40,11 @@ categoryRouter.get(
   "/",
   validation(categoryValidation.getCategorySchema),
   asyncHandler(categoryService.getCategory)
+);
+categoryRouter.delete(
+  "/delete/:categoryId",
+  validation(categoryValidation.deleteCategorySchema),
+  asyncHandler(categoryService.deleteCategory)
 );
 
 export default categoryRouter;

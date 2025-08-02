@@ -11,7 +11,7 @@ import {
 } from "./DTO/auth.dto";
 import { ApiError } from "../../middlewares/error.handler.middleware";
 import { emailEmitter } from "../../utils/email/emailEvent";
-import { IOtpType, OtpType } from "../../types/types";
+import { IUser, OtpType } from "../../types/types";
 import { compare } from "../../utils/hash/hash";
 import {
   generateAccessToken,
@@ -20,7 +20,7 @@ import {
 import { verifyToken } from "../../utils/token/token";
 
 class AuthService {
-  private User = new DatabaseServices(userModel);
+  private User = new DatabaseServices<IUser>(userModel);
 
   signUp = async (req: Request, res: Response, next: NextFunction) => {
     const data = { ...req.body } as ISignUpDto;
@@ -31,6 +31,8 @@ class AuthService {
 
     if (checkUser) return next(new ApiError("User already exists", 409));
 
+    const user = await this.User.create(data);
+
     emailEmitter.emit(
       "sendEmail",
       data.email,
@@ -38,7 +40,6 @@ class AuthService {
       OtpType.register
     );
 
-    const user = await this.User.create(data);
     return res.status(201).json(user);
   };
 
@@ -49,16 +50,10 @@ class AuthService {
 
     if (!user) return next(new ApiError("User not found", 404));
 
-    if (user.confiemEmail)
+    if (user.isConfirmed)
       return next(new ApiError("User already confirmed", 409));
 
-    if (!Array.isArray(user.OTP) || user.OTP.length == 0) {
-      return next(new ApiError("OTP data is missing or invalid", 400));
-    }
-
-    const otpData = user.OTP.find(
-      (otp: IOtpType) => otp.type === OtpType.register
-    );
+    const otpData = user.OTP;
 
     if (!(otpData?.expiresIn instanceof Date)) {
       return next(new ApiError("Invalid OTP data", 400));
@@ -72,7 +67,7 @@ class AuthService {
     if (compareOtp) {
       await this.User.findOneAndUpdate({
         filter: { email: data.email },
-        update: { isConfirmed: true, OTP: [] },
+        update: { isConfirmed: true, OTP: null },
       });
       return res.status(200).json({ message: "Email confirmed successfully" });
     } else {
@@ -104,13 +99,7 @@ class AuthService {
     const user = await this.User.findOne({ filter: { email: data.email } });
     if (!user) return next(new ApiError("User Not Found", 404));
 
-    if (!Array.isArray(user.OTP) || user.OTP.length == 0) {
-      return next(new ApiError("OTP data is missing or invalid", 400));
-    }
-
-    const otpData = user.OTP.find(
-      (otp: IOtpType) => otp.type === OtpType.login
-    );
+    const otpData = user.OTP;
 
     if (!(otpData?.expiresIn instanceof Date)) {
       return next(new ApiError("Invalid OTP data", 400));
@@ -124,7 +113,7 @@ class AuthService {
     if (compareOtp) {
       await this.User.findOneAndUpdate({
         filter: { email: data.email },
-        update: { OTP: [] },
+        update: { OTP: null },
       });
 
       const accessToken = generateAccessToken(user);
@@ -168,9 +157,7 @@ class AuthService {
       return next(new ApiError("OTP data is missing or invalid", 400));
     }
 
-    const otpData = user.OTP.find(
-      (otp: IOtpType) => otp.type === OtpType.forgetPassword
-    );
+    const otpData = user.OTP;
 
     if (!(otpData?.expiresIn instanceof Date)) {
       return next(new ApiError("Invalid OTP data", 400));
@@ -183,7 +170,7 @@ class AuthService {
 
     if (compareOtp) {
       user.password = data.password;
-      user.OTP = [];
+      user.OTP = null;
       await user.save();
 
       return res.status(200).json({ message: "Password reset successfully" });

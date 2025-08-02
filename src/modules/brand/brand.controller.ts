@@ -10,13 +10,14 @@ import { asyncHandler } from "../../middlewares/error.handler.middleware.ts";
 import { validation } from "../../middlewares/validation.middleware.ts";
 import * as brandValidation from "./brand.validation.ts";
 import brandService from "./brand.service.ts";
+import { userRole } from "../../types/types.ts";
 
 const brandRouter: Router = Router();
 
 brandRouter.post(
   "/create",
   auth(),
-  allowTo(["Admin"]),
+  allowTo([userRole.Admin, userRole.SuperAdmin]),
   upload.single("logo"),
   filesFilter(allowedfiles.image, allowedfilesFilterForSharp.image),
   validation(brandValidation.createBrandSchema),
@@ -26,7 +27,7 @@ brandRouter.post(
 brandRouter.patch(
   "/update/:brandId",
   auth(),
-  allowTo(["Admin"]),
+  allowTo([userRole.Admin, userRole.SuperAdmin]),
   upload.single("logo"),
   filesFilter(allowedfiles.image, allowedfilesFilterForSharp.image),
   validation(brandValidation.updateBrandSchema),
@@ -35,8 +36,15 @@ brandRouter.patch(
 
 brandRouter.get(
   "/",
-  validation(brandValidation.getSubBrandSchema),
+  validation(brandValidation.getBrandSchema),
   asyncHandler(brandService.getBrand)
 );
 
+brandRouter.delete(
+  "/delete/:brandId",
+  auth(),
+  allowTo([userRole.Admin, userRole.SuperAdmin]),
+  validation(brandValidation.deleteBrandSchema),
+  asyncHandler(brandService.deleteBrand)
+);
 export default brandRouter;

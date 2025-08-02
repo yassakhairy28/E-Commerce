@@ -2,6 +2,7 @@ import { HydratedDocument, model, models, Schema } from "mongoose";
 import { IUser, OtpType, Provider, userRole } from "../../types/types";
 import { hash } from "../../utils/hash/hash";
 import { encrypt } from "../../utils/encryption/encryption";
+import { required } from "joi";
 
 export const defaultProfilePic =
   "https://res.cloudinary.com/dfomwahqk/image/upload/v1753229819/default-profile_p4vcvj.jpg";
@@ -52,32 +53,59 @@ const userSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
     },
-    deletedAt: Date,
-    OTP: [
-      {
-        code: String,
-        type: {
-          type: String,
-          enum: Object.values(OtpType), // types of otps
-        },
-        expiresIn: {
-          type: Date,
-          required: true,
-        },
-        countOfSentCode: {
-          type: Number,
-          default: 0,
-        },
-        waitingTime: {
-          type: Date,
-          default: null,
-        },
-        lastSentCount: {
-          type: Number,
-          default: 0,
-        },
+    delete: {
+      isDeleted: {
+        type: Boolean,
+        default: false,
       },
-    ],
+      deletedAt: Date,
+      deletedBy: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+      unDeletedAt: Date,
+      unDeletedBy: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    },
+    block: {
+      isBlocked: {
+        type: Boolean,
+        default: false,
+      },
+      blockedAt: Date,
+      blockedBy: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+      unBlockedAt: Date,
+      unBlockedBy: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    },
+    OTP: {
+      code: String,
+      type: {
+        type: String,
+        enum: Object.values(OtpType), // types of otps
+      },
+      expiresIn: Date,
+      countOfSentCode: {
+        type: Number,
+        default: 0,
+      },
+      waitingTime: {
+        type: Date,
+        default: null,
+      },
+      lastSentCount: {
+        type: Number,
+        default: 0,
+      },
+    },
+
     changeCredentials: {
       type: Date,
       default: null,

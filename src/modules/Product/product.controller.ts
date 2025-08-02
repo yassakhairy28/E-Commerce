@@ -10,13 +10,14 @@ import {
   filesFilterForFields,
   upload,
 } from "../../middlewares/multer.middleware.ts";
+import { userRole } from "../../types/types.ts";
 
 const productRouter: Router = Router();
 
 productRouter.post(
   "/createProduct",
   auth(),
-  allowTo(["Admin"]),
+  allowTo([userRole.Admin, userRole.SuperAdmin]),
   upload.fields([
     { name: "image", maxCount: 1 },
     { name: "gallary", maxCount: 8 },
@@ -29,8 +30,7 @@ productRouter.post(
 productRouter.patch(
   "/updateProduct/:productId",
   auth(),
-  allowTo(["Admin"]),
-
+  allowTo([userRole.Admin, userRole.SuperAdmin]),
   upload.fields([
     { name: "image", maxCount: 1 },
     { name: "gallary", maxCount: 8 },
@@ -44,6 +44,13 @@ productRouter.get(
   "/",
   validation(productValidation.findProductSchema),
   asyncHandler(productService.findProduct)
+);
+productRouter.delete(
+  "/delete/:productId",
+  auth(),
+  allowTo([userRole.Admin, userRole.SuperAdmin]),
+  validation(productValidation.deleteProductSchema),
+  asyncHandler(productService.deleteProduct)
 );
 
 export default productRouter;

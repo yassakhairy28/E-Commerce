@@ -10,7 +10,6 @@ export const signUpSchema = {
     mobileNumber: generalFields.mobileNumber.required(),
     age: generalFields.age.required(),
     address: generalFields.address.required(),
-    role: generalFields.role,
   }),
 };
 

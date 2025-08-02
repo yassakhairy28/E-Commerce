@@ -17,8 +17,9 @@ import { ApiError } from "../../middlewares/error.handler.middleware.ts";
 import { fileDelete, fileUpload } from "../../middlewares/multer.middleware.ts";
 import crypto from "crypto";
 import categoryModel from "../../DB/models/category.model.ts";
-import { FilterQuery } from "mongoose";
+import { FilterQuery, Types } from "mongoose";
 import { cacheHandler } from "../../utils/cashing/cacheHandler.ts";
+import assertAdminOrSuperAdmin from "../../helper/assertAdminOrSuperAdmin.ts";
 
 class subCategory {
   private subCategory = new DatabaseServices<ISubCategory>(SubCategoryModel);
@@ -29,6 +30,8 @@ class subCategory {
     res: Response,
     next: NextFunction
   ) => {
+    assertAdminOrSuperAdmin(req.user, next);
+
     const data = { ...req.body } as CreateSubCategoryDto;
 
     const slug = slugify(data.name, { lower: true, strict: true });
@@ -60,10 +63,12 @@ class subCategory {
     return res.status(201).json(subCategory);
   };
   updateSubCategory = async (
-    req: Request,
+    req: IAuthRequest,
     res: Response,
     next: NextFunction
   ) => {
+    assertAdminOrSuperAdmin(req.user, next);
+
     const data = {
       ...req.body,
       subCategoryId: req.params.subCategoryId,
@@ -152,6 +157,22 @@ class subCategory {
       ],
     });
     return res.status(200).json(subCategories);
+  };
+  deleteSubCategory = async (
+    req: IAuthRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    assertAdminOrSuperAdmin(req.user, next);
+
+    const subCategoryId = new Types.ObjectId(req.params.subCategoryId);
+    const subCategory = await this.Category.findById(subCategoryId);
+    if (!subCategory) return next(new ApiError("subCategory not found", 404));
+    await this.Category.deleteOne({ filter: { _id: subCategoryId } });
+    await cacheHandler.del(`subCategory:${subCategoryId}`);
+    return res
+      .status(200)
+      .json({ message: "subCategory deleted successfully" });
   };
 }
 

@@ -30,3 +30,11 @@ export const getSubCategorySchema = {
     page: generalFields.page.optional(),
   }),
 };
+
+export const deleteSubCategorySchema = {
+  params: joi
+    .object({
+      subCategoryId: generalFields.id.required(),
+    })
+    .required(),
+};

@@ -11,11 +11,7 @@ const resendOtp = (subject: string) => {
 
     if (!user) return next(new ApiError("User not found", 404));
 
-    if (!user.OTP || !Array.isArray(user.OTP)) {
-      return next(new ApiError("OTP data is missing or invalid", 400));
-    }
-    const otpData = user.OTP?.find((otp: any) => otp.type === subject);
-    if (!otpData) return next(new ApiError("OTP data not found", 400));
+    const otpData = user.OTP;
 
     if (otpData.waitingTime && otpData.waitingTime > Date.now()) {
       const remainingTime = Math.ceil(

@@ -20,12 +20,18 @@ export const updateBrandSchema = {
   file: generalFields.fileObject.optional(),
 };
 
-export const getSubBrandSchema = {
+export const getBrandSchema = {
   query: joi.object({
     brandId: generalFields.id.optional(),
     name: generalFields.name.optional(),
     select: generalFields.select.optional(),
     sort: generalFields.sort.optional(),
     page: generalFields.page.optional(),
+  }),
+};
+
+export const deleteBrandSchema = {
+  params: joi.object({
+    brandId: generalFields.id.required(),
   }),
 };

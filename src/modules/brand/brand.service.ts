@@ -5,10 +5,11 @@ import slugify from "slugify";
 import { ApiError } from "../../middlewares/error.handler.middleware.ts";
 import { fileDelete, fileUpload } from "../../middlewares/multer.middleware.ts";
 import crypto from "crypto";
-import { FilterQuery } from "mongoose";
+import { FilterQuery, Types } from "mongoose";
 import brandModel from "../../DB/models/brand.model.ts";
 import { CreateBrandDto, IGetBrand, IUpdateBrand } from "./DTO/brand.dto.ts";
 import { cacheHandler } from "../../utils/cashing/cacheHandler.ts";
+import assertAdminOrSuperAdmin from "../../helper/assertAdminOrSuperAdmin.ts";
 
 class Brand {
   private Brand = new DatabaseServices<IBrand>(brandModel);
@@ -21,6 +22,8 @@ class Brand {
     const data = { ...req.body } as CreateBrandDto;
 
     const slug = slugify(data.name, { lower: true, strict: true });
+
+    assertAdminOrSuperAdmin(req.user, next);
 
     const brand = await this.Brand.create({
       name: data.name,
@@ -45,11 +48,17 @@ class Brand {
     }
     return res.status(201).json(brand);
   };
-  updateBrand = async (req: Request, res: Response, next: NextFunction) => {
+  updateBrand = async (
+    req: IAuthRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     const data = {
       ...req.body,
       brandId: req.params.brandId,
     } as IUpdateBrand;
+
+    assertAdminOrSuperAdmin(req.user, next);
 
     if (!data.name && !req.file)
       return next(new ApiError("Not Found Data to update", 400));
@@ -98,7 +107,7 @@ class Brand {
         ],
       });
 
-      if (!brand) return next(new ApiError("SubCategory not found", 404));
+      if (!brand) return next(new ApiError("Brand not found", 404));
 
       return res.status(200).json(brand);
     }
@@ -113,7 +122,7 @@ class Brand {
       };
     }
 
-    const subCategories = await this.Brand.find({
+    const brands = await this.Brand.find({
       filter,
       select: data.select,
       sort: data.sort,
@@ -122,7 +131,23 @@ class Brand {
         { path: "createdBy", select: "firstName lastName email profilePic" },
       ],
     });
-    return res.status(200).json(subCategories);
+    return res.status(200).json(brands);
+  };
+
+  deleteBrand = async (
+    req: IAuthRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    assertAdminOrSuperAdmin(req.user, next);
+    const brandId = new Types.ObjectId(req.params.brandId);
+
+    const brand = await this.Brand.findById(brandId);
+    if (!brand) return next(new ApiError("Brand not found", 404));
+
+    await this.Brand.deleteOne({ filter: { _id: brandId } });
+    await cacheHandler.del(`brand:${brandId}`);
+    return res.status(200).json({ message: "Brand deleted successfully" });
   };
 }
 

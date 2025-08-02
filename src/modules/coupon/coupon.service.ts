@@ -6,6 +6,7 @@ import couponModel from "../../DB/models/coupon.model.ts";
 import { ApiError } from "../../middlewares/error.handler.middleware.ts";
 import slugify from "slugify";
 import { parseExpiresAt } from "../../helper/dateHandle.ts";
+import assertAdminOrSuperAdmin from "../../helper/assertAdminOrSuperAdmin.ts";
 
 class CouponService {
   private Coupon = new DatabaseServices<ICoupon>(couponModel);
@@ -14,6 +15,8 @@ class CouponService {
     res: Response,
     next: NextFunction
   ) => {
+    assertAdminOrSuperAdmin(req.user, next);
+
     const data = { ...req.body } as CouponDto.ICreateCouponDto;
 
     const checkCoupon = await this.Coupon.findOne({
@@ -68,6 +71,8 @@ class CouponService {
     res: Response,
     next: NextFunction
   ) => {
+    assertAdminOrSuperAdmin(req.user, next);
+
     const data = { ...req.body } as CouponDto.IUpdateCouponDto;
     const code = req.params.code;
 
@@ -103,6 +108,8 @@ class CouponService {
   deActivate = async (req: IAuthRequest, res: Response, next: NextFunction) => {
     const code = req.params.code;
 
+    assertAdminOrSuperAdmin(req.user, next);
+
     if (!code) {
       return next(new ApiError("Coupon code is required", 400));
     }
@@ -130,6 +137,8 @@ class CouponService {
   };
   reActivate = async (req: IAuthRequest, res: Response, next: NextFunction) => {
     const code = req.params.code;
+
+    assertAdminOrSuperAdmin(req.user, next);
 
     if (!code) {
       return next(new ApiError("Coupon code is required", 400));
@@ -159,6 +168,8 @@ class CouponService {
     next: NextFunction
   ) => {
     const code = req.params.code;
+
+    assertAdminOrSuperAdmin(req.user, next);
 
     if (!code) {
       return next(new ApiError("Coupon code is required", 400));

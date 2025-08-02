@@ -6,6 +6,7 @@ import {
   IProduct,
   IReview,
   ReviewRatingLabel,
+  userRole,
 } from "../../types/types.ts";
 import * as reviewDTO from "./DTO/review.dto.ts";
 import { ApiError } from "../../middlewares/error.handler.middleware.ts";
@@ -159,7 +160,8 @@ class ReviewService {
     if (!review) return next(new ApiError("Review not found", 404));
 
     if (
-      req.user.role === "Admin" ||
+      req.user.role === userRole.SuperAdmin ||
+      req.user.role === userRole.Admin ||
       String(req.user._id) === String(review.createdBy)
     ) {
       await this.Review.deleteOne({ _id: reviewId });

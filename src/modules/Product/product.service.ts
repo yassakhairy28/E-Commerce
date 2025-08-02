@@ -21,6 +21,8 @@ import { FilterQuery } from "mongoose";
 import SubCategoryModel from "../../DB/models/subCategory.model.ts";
 import brandModel from "../../DB/models/brand.model.ts";
 import { cacheHandler } from "../../utils/cashing/cacheHandler.ts";
+import assertAdminOrSuperAdmin from "../../helper/assertAdminOrSuperAdmin.ts";
+import { Types } from "mongoose";
 
 class ProductService {
   private Product = new DatabaseServices<IProduct>(productModel);
@@ -32,6 +34,8 @@ class ProductService {
     res: Response,
     next: NextFunction
   ) => {
+    assertAdminOrSuperAdmin(req.user, next);
+
     const data = { ...req.body } as ICreateProductDTO;
     const files = { ...req.files } as ICreateProductDTO;
 
@@ -84,7 +88,13 @@ class ProductService {
       data: product,
     });
   };
-  updateProduct = async (req: Request, res: Response, next: NextFunction) => {
+  updateProduct = async (
+    req: IAuthRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    assertAdminOrSuperAdmin(req.user, next);
+
     const data = { ...req.body } as IUpdateProductDTO;
     const files = { ...req.files } as IUpdateProductDTO;
     const { productId } = req.params;
@@ -203,6 +213,18 @@ class ProductService {
     return res.status(200).json({
       success: true,
       data: products,
+    });
+  };
+  deleteProduct = async (req: Request, res: Response, next: NextFunction) => {
+    const productId = new Types.ObjectId(req.params.productId);
+    const product = await this.Product.findById(productId);
+    if (!product) return next(new ApiError("Product not found", 404));
+
+    await this.Product.deleteOne({ filter: { _id: productId } });
+    cacheHandler.del(`product:${productId}`);
+    return res.status(200).json({
+      success: true,
+      message: "Product deleted successfully",
     });
   };
 }

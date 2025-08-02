@@ -1,5 +1,6 @@
 import joi from "joi";
 import { generalFields } from "../../middlewares/validation.middleware.ts";
+import e from "express";
 
 export const createProductSchema = {
   body: joi.object({
@@ -50,4 +51,12 @@ export const findProductSchema = {
     sort: generalFields.sort.optional(),
     page: generalFields.page.optional(),
   }),
+};
+
+export const deleteProductSchema = {
+  params: joi
+    .object({
+      productId: generalFields.id.required(),
+    })
+    .required(),
 };

@@ -32,11 +32,27 @@ export enum OtpType {
 export enum userRole {
   Admin = "Admin",
   User = "User",
+  SuperAdmin = "SuperAdmin",
 }
 
 export enum Provider {
   Google = "google",
   System = "System",
+}
+
+export interface IBlock {
+  isBlocked: boolean;
+  blockedAt?: Date;
+  blockedBy?: Types.ObjectId;
+  unBlockedAt?: Date;
+  unBlockedBy?: Types.ObjectId;
+}
+export interface IDelete {
+  isDeleted: boolean;
+  deletedAt?: Date;
+  deletedBy?: Types.ObjectId;
+  unDeletedAt?: Date;
+  unDeletedBy?: Types.ObjectId;
 }
 
 export interface IUser extends Document {
@@ -50,10 +66,11 @@ export interface IUser extends Document {
   mobileNumber: string;
   age: number;
   isConfirmed: boolean;
-  OTP?: IOtpType[];
-  deletedAt: Date;
+  OTP?: IOtpType | null;
+  delete: IDelete;
   updatedAt: Date;
   createdAt: Date;
+  block: IBlock;
   changeCredentials?: Date;
   profilePic: IAttachment;
   address: string;

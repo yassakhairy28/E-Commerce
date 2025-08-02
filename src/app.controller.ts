@@ -19,49 +19,14 @@ import cors from "cors";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import swaggerUi from "swagger-ui-express";
-import swaggerJSDoc from "swagger-jsdoc";
+import adminRouter from "./modules/Admin/admin.controller.ts";
+import swaggerSpec from "./docs/swagger/swagger.ts";
 
 // limit request
 const limiter = rateLimit({
   windowMs: 10 * 60 * 1000, // 10 minutes
   limit: 50, // limit eacth IP 50 requests per windowMs
 });
-
-const options = {
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "E-Commerce API",
-      version: "1.0.0",
-      description: "API documentation for the E-Commerce platform",
-    },
-    servers: [
-      {
-        url: "http://localhost:5000/api/v1",
-        description: "Local development server",
-      },
-    ],
-    components: {
-      securitySchemes: {
-        bearerAuth: {
-          type: "http",
-          scheme: "bearer",
-          bearerFormat: "JWT",
-        },
-      },
-    },
-    security: [
-      {
-        bearerAuth: [],
-      },
-    ],
-  },
-  apis: [
-    "./src/docs/**/*.ts", // <-- دا بيشمل كل ملفات التوثيق الفرعية
-  ],
-};
-
-const swaggerSpec = swaggerJSDoc(options);
 
 const bootstrap = async (app: express.Application) => {
   // security
@@ -92,6 +57,7 @@ const bootstrap = async (app: express.Application) => {
   app.use("/coupon", couponRouter);
   app.use("/order", orderRouter);
   app.use("/review", reviewRouter);
+  app.use("/admin", adminRouter);
 
   // Error handlers
   app.all("/*dummy", notFoundHanlder);

@@ -67,5 +67,4 @@ authRouter.get(
   asyncHandler(authService.refreshToken)
 );
 
-
 export default authRouter;

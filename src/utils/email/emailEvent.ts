@@ -27,40 +27,21 @@ emailEmitter.on("sendEmail", async (email, userName, subjectType) => {
   //Generate Otp
   const otp = generateNumericId(6);
   const hashOtp = hash({ plainText: otp });
-  const expiresIn = Date.now() + 10 * 60 * 1000;
+  const expiresIn = new Date(Date.now() + 10 * 60 * 1000);
 
   const user = await User.findOne({ filter: { email } });
 
-  if (user.OTP.length === 0) {
-    user.OTP.push({
-      code: hashOtp,
-      expiresIn,
-      type: subjectType,
-    });
-    await user.save();
+  if (user.OTP && user.OTP.type != subjectType) {
+    user.OTP.code = hashOtp;
+    user.OTP.expiresIn = expiresIn;
+    user.OTP.type = subjectType;
+    user.OTP.countOfSentCode = 1;
   } else {
-    if (user.OTP[0].type == subjectType) {
-      await userModel.updateOne(
-        { email, "OTP.type": subjectType },
-        {
-          $set: {
-            "OTP.$.code": hashOtp,
-            "OTP.$.expiresIn": expiresIn,
-          },
-        }
-      );
-    } else {
-      user.OTP = [
-        {
-          code: hashOtp,
-          expiresIn,
-          type: subjectType,
-        },
-      ];
-
-      await user.save();
-    }
+    user.OTP.code = hashOtp;
+    user.OTP.expiresIn = expiresIn;
   }
+
+  await user.save();
 
   let msg;
   switch (subjectType) {

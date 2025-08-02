@@ -30,3 +30,11 @@ export const getCategorySchema = {
     page: generalFields.page.optional(),
   }),
 };
+
+export const deleteCategorySchema = {
+  params: joi
+    .object({
+      categoryId: generalFields.id.required(),
+    })
+    .required(),
+};

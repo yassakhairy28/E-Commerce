@@ -9,6 +9,8 @@ import { ApiError } from "../../middlewares/error.handler.middleware.ts";
 import { FilterQuery } from "mongoose";
 import crypto from "crypto";
 import { cacheHandler } from "../../utils/cashing/cacheHandler.ts";
+import assertAdminOrSuperAdmin from "../../helper/assertAdminOrSuperAdmin.ts";
+import { Types } from "mongoose";
 
 class CategoryService {
   private Category = new DatabaseServices<ICategory>(categoryModel);
@@ -17,6 +19,8 @@ class CategoryService {
     res: Response,
     next: NextFunction
   ) => {
+    assertAdminOrSuperAdmin(req.user, next);
+
     const category = await this.Category.findOne({
       filter: { name: req.body.name },
     });
@@ -51,8 +55,14 @@ class CategoryService {
       .json({ message: "Category created successfully", newCategory });
   };
 
-  updateCategory = async (req: Request, res: Response, next: NextFunction) => {
+  updateCategory = async (
+    req: IAuthRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     const data = { ...req.body, ...req.params } as IUpdateCategory;
+
+    assertAdminOrSuperAdmin(req.user, next);
 
     const category = await this.Category.findById(data.categoryId)!;
 
@@ -146,6 +156,21 @@ class CategoryService {
     });
 
     return res.status(200).json(categories);
+  };
+  deleteCategory = async (
+    req: IAuthRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    assertAdminOrSuperAdmin(req.user, next);
+    const categoryId = new Types.ObjectId(req.params.categoryId);
+
+    const category = await this.Category.findById(categoryId);
+    if (!category) return next(new ApiError("category not found", 404));
+
+    await this.Category.deleteOne({ filter: { _id: categoryId } });
+    await cacheHandler.del(`category:${categoryId}`);
+    return res.status(200).json({ message: "categoryId deleted successfully" });
   };
 }
 

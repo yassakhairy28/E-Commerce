@@ -1,7 +1,6 @@
 import { Types } from "mongoose";
 
 export interface IUpdateProfileDto {
-  userId: Types.ObjectId;
   firstName?: string;
   lastName?: string;
   age?: number;
